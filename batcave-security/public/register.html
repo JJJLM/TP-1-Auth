@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Création d'un compte</title>
+  </head>
+  <body>
+    <h1>Bienvenue jeune justicier !</h1>
+    <p>Entre tes infos pour entrer dans la batcave</p>
+    <form id="register-form">
+      <label for="username">Ton nom de justicier :</label>
+      <input type="text" name="username" id="username" required />
+      <br />
+      <label for="password">Mot de passe secret :</label>
+      <input type="password" name="password" id="password" required />
+      <br />
+      <button type="submit">Rejoindre la batcave</button>
+    </form>
+    <p>
+      Déjà inscrit ?
+      <a id="login-link">Entre dans la batcave</a>
+    </p>
+    <p id="message"></p>
+    <script src="register.js"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BAT-COMPUTER</title>
+  </head>
+  <body>
+    <h1>Bat-Computer Mainframe</h1>
+    <button onclick="logout()">Quitter la Batcave</button>
+
+    <h2>Arsenal Batcave</h2>
+    <ul id="gadgets-list">
+      <li>Chargement des données...</li>
+    </ul>
+
+    <script>
+      async function loadGadgets() {
+        try {
+          const response = await fetch("/api/secrets");
+          if (!response.ok) throw new Error("Accès refusé");
+
+          const gadgets = await response.json();
+          const list = document.getElementById("gadgets-list");
+          list.innerHTML = "";
+
+          gadgets.forEach((gadget) => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${gadget.name}</strong> (${gadget.icon}) : ${gadget.desc}`;
+            list.appendChild(li);
+          });
+        } catch (err) {
+          document.getElementById("gadgets-list").innerHTML =
+            "<li style='color: red;'>Erreur : Accès non autorisé</li>";
+        }
+      }
+
+      loadGadgets();
+    </script>
+    <script src="logout.js"></script>
+  </body>
+</html>
