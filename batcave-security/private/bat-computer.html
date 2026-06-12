@@ -20,7 +20,7 @@
       <p id="welcome">Chargement...</p>
 
       <h2>Arsenal</h2>
-      <ul id="gadgets-list">
+      <ul id="gadgets-list" class="gadgets-grid">
         <li>Chargement des données...</li>
       </ul>
 
@@ -51,7 +51,7 @@
         </button>
       </form>
       <p id="report-message"></p>
-      <ul id="reports-list" style="margin-top: 1rem"></ul>
+      <ul id="reports-list" class="reports-grid"></ul>
 
       <div style="margin-top: 2rem">
         <button class="secondary" onclick="logout()">Quitter la Batcave</button>
@@ -86,7 +86,8 @@
 
           gadgets.forEach((gadget) => {
             const li = document.createElement("li");
-            li.innerHTML = `<strong>${gadget.name}</strong> : ${gadget.desc}`;
+            li.className = "gadget-card";
+            li.innerHTML = `<strong>${gadget.name}</strong><span>${gadget.desc}</span>`;
             list.appendChild(li);
           });
         } catch (err) {
@@ -128,15 +129,16 @@
         if (!res.ok) return;
         const reports = await res.json();
         const list = document.getElementById("reports-list");
-        list.innerHTML =
-          reports.length === 0
-            ? "<li>Aucun rapport pour l'instant.</li>"
-            : reports
-                .map(
-                  (r) =>
-                    `<li><strong>${r.created_at}</strong> — ${r.content}</li>`
-                )
-                .join("");
+        if (reports.length === 0) {
+          list.innerHTML = "<li>Aucun rapport pour l'instant.</li>";
+        } else {
+          list.innerHTML = reports.map((r) => `
+            <li class="report-card">
+              <span class="report-date">${new Date(r.created_at).toLocaleString("fr-FR")}</span>
+              <span class="report-content">${r.content}</span>
+            </li>
+          `).join("");
+        }
       }
 
       document.getElementById("secret-form").onsubmit = async (e) => {

@@ -156,21 +156,69 @@ a:hover {
   color: #f44336;
 }
 
-ul#gadgets-list {
+.gadgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
 }
 
-ul#gadgets-list li {
+.gadget-card {
   background: #1a1a1a;
   border: 1px solid #222;
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.2s;
 }
 
-ul#gadgets-list li strong {
+.gadget-card:hover {
+  border-color: #f5c518;
+}
+
+.gadget-card strong {
   color: #f5c518;
+  font-size: 0.95rem;
+}
+
+.gadget-card span {
+  color: #999;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  margin-top: 1rem;
+}
+
+.report-card {
+  background: #1a1a1a;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.2s;
+}
+
+.report-card:hover {
+  border-color: #f5c518;
+}
+
+.report-card .report-date {
+  color: #555;
+  font-size: 0.75rem;
+}
+
+.report-card .report-content {
+  color: #ccc;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
