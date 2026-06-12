@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bat-Computer</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="#">BATCAVE</a>
+      <ul>
+        <li><a href="/bat-computer">Bat-Computer</a></li>
+        <li><a href="#" onclick="logout()">Déconnexion</a></li>
+      </ul>
+    </nav>
+
+    <main style="max-width: 600px">
+      <h1>Bat-Computer Mainframe</h1>
+      <p id="welcome">Chargement...</p>
+
+      <h2>Arsenal</h2>
+      <ul id="gadgets-list" class="gadgets-grid">
+        <li>Chargement des données...</li>
+      </ul>
+
+      <h2 id="secret-form-title" style="display: none">Ajouter un secret</h2>
+      <form id="secret-form" style="display: none">
+        <div>
+          <label for="secret-name">Nom</label>
+          <input type="text" id="secret-name" required />
+        </div>
+        <div style="margin-top: 0.75rem">
+          <label for="secret-desc">Description</label>
+          <input type="text" id="secret-desc" required />
+        </div>
+        <button type="submit" style="margin-top: 1rem">
+          Ajouter à l'arsenal
+        </button>
+      </form>
+      <p id="secret-message"></p>
+
+      <h2>Notes de mission</h2>
+      <form id="report-form" style="display: none">
+        <div>
+          <label for="report-content">Contenu du rapport</label>
+          <input type="text" id="report-content" required />
+        </div>
+        <button type="submit" style="margin-top: 1rem">
+          Enregistrer le rapport
+        </button>
+      </form>
+      <p id="report-message"></p>
+      <ul id="reports-list" class="reports-grid"></ul>
+
+      <div style="margin-top: 2rem">
+        <button class="secondary" onclick="logout()">Quitter la Batcave</button>
+      </div>
+    </main>
+
+    <script>
+      const auth = sessionStorage.getItem("auth");
+      if (!auth) window.location.href = "/";
+
+      async function loadMe() {
+        const res = await fetch("/api/me", {
+          headers: { Authorization: `Basic ${auth}` },
+        });
+        if (!res.ok) return;
+        const { username, role } = await res.json();
+        document.getElementById(
+          "welcome"
+        ).textContent = `Bienvenue, ${username}`;
+        if (role === "ADMIN") {
+          document.getElementById("secret-form-title").style.display = "";
+          document.getElementById("secret-form").style.display = "";
+          document.getElementById("report-form").style.display = "";
+        }
+      }
+
+      async function loadGadgets() {
+        try {
+          const response = await fetch("/api/secrets", {
+            headers: { Authorization: `Basic ${auth}` },
+          });
+          if (!response.ok) throw new Error("Accès refusé");
+
+          const gadgets = await response.json();
+          const list = document.getElementById("gadgets-list");
+          list.innerHTML = "";
+
+          gadgets.forEach((gadget) => {
+            const li = document.createElement("li");
+            li.className = "gadget-card";
+            li.innerHTML = `<strong>${gadget.name}</strong><span>${gadget.desc}</span>`;
+            list.appendChild(li);
+          });
+        } catch (err) {
+          document.getElementById("gadgets-list").innerHTML =
+            "<li style='color: #f44336;'>Erreur : Accès non autorisé</li>";
+        }
+      }
+
+      function logout() {
+        sessionStorage.removeItem("auth");
+        window.location.href = "/";
+      }
+
+      document.getElementById("report-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const content = document.getElementById("report-content").value;
+        const res = await fetch("/api/reports", {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${auth}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+        });
+        const msg = document.getElementById("report-message");
+        const data = await res.json();
+        msg.className = res.ok ? "success" : "error";
+        msg.textContent = res.ok ? "Rapport enregistré." : data.error;
+        if (res.ok) {
+          document.getElementById("report-content").value = "";
+          loadReports();
+        }
+      };
+
+      async function loadReports() {
+        const res = await fetch("/api/reports", {
+          headers: { Authorization: `Basic ${auth}` },
+        });
+        if (!res.ok) return;
+        const reports = await res.json();
+        const list = document.getElementById("reports-list");
+        if (reports.length === 0) {
+          list.innerHTML = "<li>Aucun rapport pour l'instant.</li>";
+        } else {
+          list.innerHTML = reports
+            .map(
+              (r) => `
+            <li class="report-card">
+              <span class="report-date">${new Date(r.created_at).toLocaleString(
+                "fr-FR"
+              )}</span>
+              <span class="report-content">${r.content}</span>
+            </li>
+          `
+            )
+            .join("");
+        }
+      }
+
+      document.getElementById("secret-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("secret-name").value;
+        const desc = document.getElementById("secret-desc").value;
+        const res = await fetch("/api/secrets", {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${auth}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, desc }),
+        });
+        const msg = document.getElementById("secret-message");
+        const data = await res.json();
+        msg.className = res.ok ? "success" : "error";
+        msg.textContent = res.ok ? "Secret ajouté." : data.error;
+        if (res.ok) {
+          e.target.reset();
+          loadGadgets();
+        }
+      };
+
+      loadMe();
+      loadGadgets();
+      loadReports();
+    </script>
+  </body>
+</html>
