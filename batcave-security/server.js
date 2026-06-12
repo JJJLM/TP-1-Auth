@@ -1,23 +1,17 @@
-// Import des librairies et de la BDD
 const express = require("express");
 const bcrypt = require("bcrypt");
 const db = require("./db");
 
-// Créé du serveur Express
 const app = express();
-// Rend possible la lecture et l'écriture du JSON
 app.use(express.json());
-// Ouvre les fichiers frontend non protégés
 app.use(express.static("public"));
 
-// Lance le serveur en local, sur le port 3000
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
 
 app.post("/register", async (req, res) => {
-  // Récupère les identifiants saisis par l'utilisateur
   const { username, password } = req.body;
 
   const trimmedUsername = username.trim();
@@ -48,10 +42,8 @@ app.post("/register", async (req, res) => {
         );
     }
 
-    // Hachage du mot de passe avant stockage !
     const hash = await bcrypt.hash(password, 10);
 
-    // Requête SQL pour insérer le nouvel utilisateur en base
     const insert = db.prepare(
       "INSERT INTO users (username, password_hash) VALUES (?, ?)"
     );
@@ -70,31 +62,58 @@ app.post("/register", async (req, res) => {
   }
 });
 
+const failedAttempts = {};
+const MAX_ATTEMPTS = 3;
+const BLOCK_DURATION = 30 * 1000;
+
 const checkAuth = async (req, res, next) => {
-  // Récupère l'en-tête pour la vérifier avant d'atteindre les routes protégées
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Basic ")) {
     return res.status(401).json({ error: "Authentification requise" });
   }
-  // Décodage du Base64
+
   const base64 = authHeader.split(" ")[1];
   const [username, password] = Buffer.from(base64, "base64")
     .toString()
     .split(":");
 
-  // Vérification en BDD
+  const attempt = failedAttempts[username];
+  if (attempt && attempt.blockedUntil > Date.now()) {
+    const remaining = Math.ceil((attempt.blockedUntil - Date.now()) / 1000);
+    return res.status(429).json({
+      error: `Trop de tentatives éronnées. Réessayez dans ${remaining}s.`,
+    });
+  }
+
   const user = db
     .prepare("SELECT * FROM users WHERE username = ?")
     .get(username);
-  // Comparaison des mots de passe avec bcrypt
+
   if (user && (await bcrypt.compare(password, user.password_hash))) {
-    req.user = user; // On conserve l'utilisateur dans la requête, si besoin
+    delete failedAttempts[username];
+
+    db.prepare("INSERT INTO logs (username, route) VALUES (?, ?)").run(
+      user.username,
+      req.path
+    );
+
+    req.user = user;
     next();
   } else {
-    return res.status(401).json({ error: "Identifiants invalides" });
+    if (!failedAttempts[username])
+      failedAttempts[username] = { count: 0, blockedUntil: 0 };
+    failedAttempts[username].count += 1;
+    if (failedAttempts[username].count >= MAX_ATTEMPTS) {
+      failedAttempts[username].blockedUntil = Date.now() + BLOCK_DURATION;
+      return res
+        .status(429)
+        .json({ error: "Trop de tentatives. Compte bloqué 30 secondes." });
+    }
+    return res.status(401).json({ error: "Identifiants invalides." });
   }
 };
+
 
 app.get("/", (_req, res) => {
   res.sendFile(__dirname + "/public/index.html");
@@ -105,20 +124,42 @@ app.get("/bat-computer", (_req, res) => {
 });
 
 app.get("/api/me", checkAuth, (req, res) => {
-  res.json({ id: req.user.id, username: req.user.username });
+  res.json({
+    id: req.user.id,
+    username: req.user.username,
+    role: req.user.role,
+  });
 });
 
-app.post("/api/reports", checkAuth, (req, res) => {
+app.post("/logout", (_req, res) => {
+  res.status(200).json({ message: "Déconnecté." });
+});
+
+const checkAdmin = (req, res, next) => {
+  if (req.user.role !== "ADMIN") {
+    return res
+      .status(403)
+      .json({ error: "Accès refusé : droits insuffisants." });
+  }
+  next();
+};
+
+app.post("/api/reports", checkAuth, checkAdmin, (req, res) => {
   const { content } = req.body;
   if (!content || content.trim() === "") {
     return res.status(400).json({ error: "Le contenu du rapport est requis." });
   }
-  db.prepare("INSERT INTO reports (user_id, content) VALUES (?, ?)").run(req.user.id, content.trim());
+  db.prepare("INSERT INTO reports (user_id, content) VALUES (?, ?)").run(
+    req.user.id,
+    content.trim()
+  );
   res.status(201).json({ message: "Rapport enregistré." });
 });
 
 app.get("/api/reports", checkAuth, (req, res) => {
-  const reports = db.prepare("SELECT * FROM reports WHERE user_id = ? ORDER BY created_at DESC").all(req.user.id);
+  const reports = db
+    .prepare("SELECT * FROM reports WHERE user_id = ? ORDER BY created_at DESC")
+    .all(req.user.id);
   res.json(reports);
 });
 
@@ -127,12 +168,17 @@ app.get("/api/secrets", checkAuth, (_req, res) => {
   res.json(secrets);
 });
 
-app.post("/api/secrets", checkAuth, (req, res) => {
+app.post("/api/secrets", checkAuth, checkAdmin, (req, res) => {
   const { name, desc } = req.body;
   if (!name || !desc) {
-    return res.status(400).json({ error: "Les champs name et desc sont requis." });
+    return res
+      .status(400)
+      .json({ error: "Les champs name et desc sont requis." });
   }
-  db.prepare("INSERT INTO secrets (name, desc) VALUES (?, ?)").run(name.trim(), desc.trim());
+  db.prepare("INSERT INTO secrets (name, desc) VALUES (?, ?)").run(
+    name.trim(),
+    desc.trim()
+  );
   res.status(201).json({ message: "Secret ajouté." });
 });
 

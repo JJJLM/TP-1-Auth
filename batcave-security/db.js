@@ -2,15 +2,26 @@ const Database = require("better-sqlite3");
 const bcrypt = require("bcrypt");
 const db = new Database("database.db");
 
-// Création de la table avec `username` UNIQUE
 db.prepare(
   `
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
-    password_hash TEXT
+    password_hash TEXT,
+    role TEXT NOT NULL DEFAULT 'USER'
   )
-`,
+`
+).run();
+
+db.prepare(
+  `
+  CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    route TEXT NOT NULL,
+    accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`
 ).run();
 
 db.prepare(
@@ -50,18 +61,18 @@ if (countSecrets.count === 0) {
 }
 
 const seedUsers = [
-  { username: "batman",    password: "gotham123" },
-  { username: "robin",     password: "gotham123" },
-  { username: "alfred",    password: "gotham123" },
-  { username: "joker",     password: "gotham123" },
-  { username: "bane",      password: "gotham123" },
-  { username: "penguin",   password: "gotham123" },
+  { username: "batman",    password: "gotham123", role: "ADMIN" },
+  { username: "robin",     password: "gotham123", role: "ADMIN" },
+  { username: "alfred",    password: "gotham123", role: "ADMIN" },
+  { username: "joker",     password: "gotham123", role: "USER" },
+  { username: "bane",      password: "gotham123", role: "USER" },
+  { username: "penguin",   password: "gotham123", role: "USER" },
 ];
 
-const insertUser = db.prepare("INSERT OR IGNORE INTO users (username, password_hash) VALUES (?, ?)");
+const insertUser = db.prepare("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?, ?, ?)");
 for (const u of seedUsers) {
   const hash = bcrypt.hashSync(u.password, 10);
-  insertUser.run(u.username, hash);
+  insertUser.run(u.username, hash, u.role);
 }
 
 const seedReports = [

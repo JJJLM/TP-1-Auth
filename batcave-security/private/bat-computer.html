@@ -24,8 +24,8 @@
         <li>Chargement des données...</li>
       </ul>
 
-      <h2>Ajouter un secret</h2>
-      <form id="secret-form">
+      <h2 id="secret-form-title" style="display: none">Ajouter un secret</h2>
+      <form id="secret-form" style="display: none">
         <div>
           <label for="secret-name">Nom</label>
           <input type="text" id="secret-name" required />
@@ -41,7 +41,7 @@
       <p id="secret-message"></p>
 
       <h2>Notes de mission</h2>
-      <form id="report-form">
+      <form id="report-form" style="display: none">
         <div>
           <label for="report-content">Contenu du rapport</label>
           <input type="text" id="report-content" required />
@@ -67,10 +67,15 @@
           headers: { Authorization: `Basic ${auth}` },
         });
         if (!res.ok) return;
-        const { username } = await res.json();
+        const { username, role } = await res.json();
         document.getElementById(
           "welcome"
-        ).textContent = `Bienvenue, Justicier ${username}`;
+        ).textContent = `Bienvenue, ${username}`;
+        if (role === "ADMIN") {
+          document.getElementById("secret-form-title").style.display = "";
+          document.getElementById("secret-form").style.display = "";
+          document.getElementById("report-form").style.display = "";
+        }
       }
 
       async function loadGadgets() {
@@ -132,12 +137,18 @@
         if (reports.length === 0) {
           list.innerHTML = "<li>Aucun rapport pour l'instant.</li>";
         } else {
-          list.innerHTML = reports.map((r) => `
+          list.innerHTML = reports
+            .map(
+              (r) => `
             <li class="report-card">
-              <span class="report-date">${new Date(r.created_at).toLocaleString("fr-FR")}</span>
+              <span class="report-date">${new Date(r.created_at).toLocaleString(
+                "fr-FR"
+              )}</span>
               <span class="report-content">${r.content}</span>
             </li>
-          `).join("");
+          `
+            )
+            .join("");
         }
       }
 

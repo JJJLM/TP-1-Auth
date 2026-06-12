@@ -43,7 +43,7 @@
         const password = document.getElementById("password").value;
         const credentials = btoa(`${username}:${password}`);
 
-        const response = await fetch("/api/secrets", {
+        const response = await fetch("/api/me", {
           headers: { Authorization: `Basic ${credentials}` },
         });
 
