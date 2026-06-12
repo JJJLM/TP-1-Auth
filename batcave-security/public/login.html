@@ -3,37 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inscription — Batcave</title>
+    <title>Connexion — Batcave</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <nav>
-      <a class="brand" href="/">BATCAVE</a>
+      <a class="brand" href="#">BATCAVE</a>
       <ul>
-        <li><a href="/">Connexion</a></li>
+        <li><a href="/login.html">Connexion</a></li>
+        <li><a href="/register.html">Inscription</a></li>
       </ul>
     </nav>
 
     <main>
-      <h1>Bienvenue jeune justicier !</h1>
-      <p>Entre tes infos pour entrer dans la batcave</p>
-      <form id="register-form">
+      <h1>Accès Batcave</h1>
+      <p>Identifie-toi pour accéder au Bat-Computer</p>
+      <form id="login-form">
         <div>
-          <label for="username">Ton nom de justicier</label>
+          <label for="username">Nom de justicier</label>
           <input type="text" name="username" id="username" required />
         </div>
         <div>
           <label for="password">Mot de passe secret</label>
           <input type="password" name="password" id="password" required />
         </div>
-        <button type="submit">Rejoindre la batcave</button>
+        <button type="submit">Entrer dans la Batcave</button>
       </form>
       <p style="margin-top: 1.25rem;">
-        Déjà inscrit ? <a href="/">Entre dans la batcave</a>
+        Pas encore inscrit ? <a href="/register.html">Rejoins la Batcave</a>
       </p>
       <p id="message"></p>
     </main>
 
-    <script src="register.js"></script>
+    <script src="login.js"></script>
   </body>
 </html>

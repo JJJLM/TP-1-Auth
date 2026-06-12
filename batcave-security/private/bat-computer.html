@@ -3,21 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BAT-COMPUTER</title>
+    <title>Bat-Computer</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <h1>Bat-Computer Mainframe</h1>
-    <button onclick="logout()">Quitter la Batcave</button>
+    <nav>
+      <a class="brand" href="#">BATCAVE</a>
+      <ul>
+        <li><a href="/bat-computer">Bat-Computer</a></li>
+        <li><a href="#" onclick="logout()">Déconnexion</a></li>
+      </ul>
+    </nav>
 
-    <h2>Arsenal Batcave</h2>
-    <ul id="gadgets-list">
-      <li>Chargement des données...</li>
-    </ul>
+    <main style="max-width: 600px;">
+      <h1>Bat-Computer Mainframe</h1>
+      <p>Arsenal de la Batcave — accès autorisé</p>
+
+      <h2>Arsenal</h2>
+      <ul id="gadgets-list">
+        <li>Chargement des données...</li>
+      </ul>
+
+      <div style="margin-top: 2rem;">
+        <button class="secondary" onclick="logout()">Quitter la Batcave</button>
+      </div>
+    </main>
 
     <script>
+      const auth = sessionStorage.getItem("auth");
+      if (!auth) window.location.href = "/";
+
       async function loadGadgets() {
         try {
-          const response = await fetch("/api/secrets");
+          const response = await fetch("/api/secrets", {
+            headers: { Authorization: `Basic ${auth}` },
+          });
           if (!response.ok) throw new Error("Accès refusé");
 
           const gadgets = await response.json();
@@ -26,17 +46,22 @@
 
           gadgets.forEach((gadget) => {
             const li = document.createElement("li");
-            li.innerHTML = `<strong>${gadget.name}</strong> (${gadget.icon}) : ${gadget.desc}`;
+            li.innerHTML = `<strong>${gadget.name}</strong> : ${gadget.desc}`;
             list.appendChild(li);
           });
         } catch (err) {
           document.getElementById("gadgets-list").innerHTML =
-            "<li style='color: red;'>Erreur : Accès non autorisé</li>";
+            "<li style='color: #f44336;'>Erreur : Accès non autorisé</li>";
         }
+      }
+
+      function logout() {
+        sessionStorage.removeItem("auth");
+        window.location.href = "/";
       }
 
       loadGadgets();
     </script>
-    <script src="logout.js"></script>
   </body>
+
 </html>

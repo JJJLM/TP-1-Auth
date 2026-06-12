@@ -1,0 +1,176 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+nav {
+  background-color: #111;
+  border-bottom: 2px solid #f5c518;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+nav .brand {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #f5c518;
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav ul a {
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+
+nav ul a:hover {
+  color: #f5c518;
+}
+
+main {
+  max-width: 480px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+}
+
+h1 {
+  color: #f5c518;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+h2 {
+  color: #f5c518;
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+p {
+  color: #999;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  border-color: #f5c518;
+}
+
+button {
+  padding: 0.65rem 1.2rem;
+  background: #f5c518;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #d4a900;
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid #444;
+  color: #e0e0e0;
+}
+
+button.secondary:hover {
+  border-color: #f5c518;
+  color: #f5c518;
+  background: transparent;
+}
+
+a {
+  color: #f5c518;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#message {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+#message.success {
+  color: #4caf50;
+}
+
+#message.error {
+  color: #f44336;
+}
+
+ul#gadgets-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+ul#gadgets-list li {
+  background: #1a1a1a;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+ul#gadgets-list li strong {
+  color: #f5c518;
+}

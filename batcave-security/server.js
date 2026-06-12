@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Lance le serveur en local, sur le port 3000
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
@@ -31,7 +31,7 @@ app.post("/register", async (req, res) => {
     return res
       .status(400)
       .send(
-        "Erreur : Le mot de passe doit faire 8 caractères minimum siv ous ne voulez pas être aussi faible que Superman.",
+        "Erreur : Le mot de passe doit faire 8 caractères minimum siv ous ne voulez pas être aussi faible que Superman."
       );
   }
 
@@ -44,7 +44,7 @@ app.post("/register", async (req, res) => {
       return res
         .status(409)
         .send(
-          "Erreur : Vous essayez d'usurper l'identité d'un justicier déjà enregistré, ce n'est pas très héroïque.",
+          "Erreur : Vous essayez d'usurper l'identité d'un justicier déjà enregistré, ce n'est pas très héroïque."
         );
     }
 
@@ -53,7 +53,7 @@ app.post("/register", async (req, res) => {
 
     // Requête SQL pour insérer le nouvel utilisateur en base
     const insert = db.prepare(
-      "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+      "INSERT INTO users (username, password_hash) VALUES (?, ?)"
     );
     insert.run(trimmedUsername, hash);
     res.status(201).send("Utilisateur créé avec succès !");
@@ -62,7 +62,7 @@ app.post("/register", async (req, res) => {
       return res
         .status(409)
         .send(
-          "Erreur : Vous essayez d'usurper l'identité d'un justicier déjà enregistré, ce n'est pas très héroïque.",
+          "Erreur : Vous essayez d'usurper l'identité d'un justicier déjà enregistré, ce n'est pas très héroïque."
         );
     }
     console.error("Erreur lors de l'inscription :", err);
@@ -75,9 +75,7 @@ const checkAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Basic ")) {
-    // Ajoute l'en-tête pour demander au navigateur d'ouvrir la fenêtre de connexion
-    res.setHeader("WWW-Authenticate", 'Basic realm="Administration"');
-    return res.status(401).send("Authentification requise");
+    return res.status(401).json({ error: "Authentification requise" });
   }
   // Décodage du Base64
   const base64 = authHeader.split(" ")[1];
@@ -94,18 +92,19 @@ const checkAuth = async (req, res, next) => {
     req.user = user; // On conserve l'utilisateur dans la requête, si besoin
     next();
   } else {
-    // Renvoie une réponse 401 avec l'en-tête WWW-Authenticate en cas d'erreur
-    res.setHeader("WWW-Authenticate", 'Basic realm="Administration"');
-    return res.status(401).send("Identifiants invalides");
+    return res.status(401).json({ error: "Identifiants invalides" });
   }
 };
 
-app.get("/bat-computer", checkAuth, (req, res) => {
-  // Sert le fichier bat-computer.html hors du dossier public (dans private/)
+app.get("/", (_req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
+app.get("/bat-computer", (_req, res) => {
   res.sendFile(__dirname + "/private/bat-computer.html");
 });
 
-app.get("/api/secrets", checkAuth, (req, res) => {
+app.get("/api/secrets", checkAuth, (_req, res) => {
   // Renvoie un tableau d'objets JSON représentant les gadgets de Batman
   res.json([
     {
@@ -134,4 +133,8 @@ app.get("/api/secrets", checkAuth, (req, res) => {
       icon: "fa-key",
     },
   ]);
+});
+
+app.use((_req, res) => {
+  res.status(404).sendFile(__dirname + "/public/404.html");
 });

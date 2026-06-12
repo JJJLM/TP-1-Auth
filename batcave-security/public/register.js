@@ -11,10 +11,10 @@ document.getElementById("register-form").onsubmit = async (e) => {
 
   const messageElement = document.getElementById("message");
   if (response.ok) {
-    messageElement.style.color = "green";
-    messageElement.innerText = "Inscription réussie !";
+    sessionStorage.setItem("auth", btoa(`${username}:${password}`));
+    window.location.href = "/bat-computer";
   } else {
-    messageElement.style.color = "red";
+    messageElement.className = "error";
     const errorMsg = await response.text();
     messageElement.innerText = errorMsg || "Erreur lors de l'inscription.";
   }

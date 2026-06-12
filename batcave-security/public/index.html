@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batcave — Connexion</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="/">BATCAVE</a>
+      <ul>
+        <li><a href="/register.html">Inscription</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <h1>Accès Batcave</h1>
+      <p>Identifie-toi pour accéder au Bat-Computer</p>
+      <form id="login-form">
+        <div>
+          <label for="username">Nom de justicier</label>
+          <input type="text" id="username" required autofocus />
+        </div>
+        <div>
+          <label for="password">Mot de passe secret</label>
+          <input type="password" id="password" required />
+        </div>
+        <button type="submit">Entrer dans la Batcave</button>
+      </form>
+      <p style="margin-top: 1.25rem;">
+        Pas encore inscrit ? <a href="/register.html">Rejoins la Batcave</a>
+      </p>
+      <p id="login-error" class="error"></p>
+    </main>
+
+    <script>
+      if (sessionStorage.getItem("auth")) window.location.href = "/bat-computer";
+
+      document.getElementById("login-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const credentials = btoa(`${username}:${password}`);
+
+        const response = await fetch("/api/secrets", {
+          headers: { Authorization: `Basic ${credentials}` },
+        });
+
+        if (response.ok) {
+          sessionStorage.setItem("auth", credentials);
+          window.location.href = "/bat-computer";
+        } else {
+          const data = await response.json().catch(() => ({}));
+          document.getElementById("login-error").textContent =
+            data.error || "Identifiants invalides.";
+        }
+      };
+    </script>
+  </body>
+</html>
