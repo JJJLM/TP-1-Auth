@@ -104,35 +104,36 @@ app.get("/bat-computer", (_req, res) => {
   res.sendFile(__dirname + "/private/bat-computer.html");
 });
 
+app.get("/api/me", checkAuth, (req, res) => {
+  res.json({ id: req.user.id, username: req.user.username });
+});
+
+app.post("/api/reports", checkAuth, (req, res) => {
+  const { content } = req.body;
+  if (!content || content.trim() === "") {
+    return res.status(400).json({ error: "Le contenu du rapport est requis." });
+  }
+  db.prepare("INSERT INTO reports (user_id, content) VALUES (?, ?)").run(req.user.id, content.trim());
+  res.status(201).json({ message: "Rapport enregistré." });
+});
+
+app.get("/api/reports", checkAuth, (req, res) => {
+  const reports = db.prepare("SELECT * FROM reports WHERE user_id = ? ORDER BY created_at DESC").all(req.user.id);
+  res.json(reports);
+});
+
 app.get("/api/secrets", checkAuth, (_req, res) => {
-  // Renvoie un tableau d'objets JSON représentant les gadgets de Batman
-  res.json([
-    {
-      name: "Batarang",
-      desc: "Arme de jet.",
-      icon: "fa-shuriken",
-    },
-    {
-      name: "Grappin de Chauve-Souris",
-      desc: "Permet de grimper.",
-      icon: "fa-anchor",
-    },
-    {
-      name: "Gel Explosif",
-      desc: "Permet de geler puis de tout faire péter.",
-      icon: "fa-spray-can",
-    },
-    {
-      name: "Brouilleur Tactique",
-      desc: "Outil de neutralisation.",
-      icon: "fa-wifi",
-    },
-    {
-      name: "Décodeur Séquentiel",
-      desc: "Permet de décoder le code en Base64.",
-      icon: "fa-key",
-    },
-  ]);
+  const secrets = db.prepare("SELECT * FROM secrets").all();
+  res.json(secrets);
+});
+
+app.post("/api/secrets", checkAuth, (req, res) => {
+  const { name, desc } = req.body;
+  if (!name || !desc) {
+    return res.status(400).json({ error: "Les champs name et desc sont requis." });
+  }
+  db.prepare("INSERT INTO secrets (name, desc) VALUES (?, ?)").run(name.trim(), desc.trim());
+  res.status(201).json({ message: "Secret ajouté." });
 });
 
 app.use((_req, res) => {
